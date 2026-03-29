@@ -935,5 +935,11 @@ require('lazy').setup({
 
 require 'custom.sebas'
 
+-- Load project-specific neovim config if it exists
+local nvim_lua = vim.fn.getcwd() .. '/.nvim.lua'
+if vim.fn.filereadable(nvim_lua) == 1 then
+  dofile(nvim_lua)
+end
+
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
