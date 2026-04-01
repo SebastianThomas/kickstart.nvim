@@ -479,41 +479,45 @@ require('lazy').setup({
             vim.keymap.set('n', keys, func, { buffer = event.buf, desc = 'LSP: ' .. desc })
           end
 
-          local telescope_builtin = require 'telescope.builtin'
-          local telescope_themes = require 'telescope.themes'
-          local lsp_picker = function(picker)
-            return function()
-              picker(telescope_themes.get_dropdown {
-                winblend = 10,
-                previewer = false,
-              })
-            end
-          end
-
           -- Jump to the definition of the word under your cursor.
           --  This is where a variable was first declared, or where a function is defined, etc.
           --  To jump back, press <C-t>.
-          map('gd', lsp_picker(telescope_builtin.lsp_definitions), '[G]oto [D]efinition')
+          map('gd', vim.lsp.buf.definition, '[G]oto [D]efinition')
 
           -- Find references for the word under your cursor.
-          map('gr', lsp_picker(telescope_builtin.lsp_references), '[G]oto [R]eferences')
+          map('gr', function()
+            vim.lsp.buf.references(nil, {
+              on_list = function(options)
+                vim.fn.setloclist(0, {}, ' ', {
+                  title = options.title,
+                  items = options.items,
+                  context = options.context,
+                })
+
+                require('telescope.builtin').loclist(require('telescope.themes').get_dropdown {
+                  winblend = 10,
+                  previewer = false,
+                })
+              end,
+            })
+          end, '[G]oto [R]eferences')
 
           -- Jump to the implementation of the word under your cursor.
           --  Useful when your language has ways of declaring types without an actual implementation.
-          map('gI', lsp_picker(telescope_builtin.lsp_implementations), '[G]oto [I]mplementation')
+          map('gI', vim.lsp.buf.implementation, '[G]oto [I]mplementation')
 
           -- Jump to the type of the word under your cursor.
           --  Useful when you're not sure what type a variable is and you want to see
           --  the definition of its *type*, not where it was *defined*.
-          map('<leader>D', lsp_picker(telescope_builtin.lsp_type_definitions), 'Type [D]efinition')
+          map('<leader>D', vim.lsp.buf.type_definition, 'Type [D]efinition')
 
           -- Fuzzy find all the symbols in your current document.
           --  Symbols are things like variables, functions, types, etc.
-          map('<leader>ds', lsp_picker(telescope_builtin.lsp_document_symbols), '[D]ocument [S]ymbols')
+          map('<leader>ds', vim.lsp.buf.document_symbol, '[D]ocument [S]ymbols')
 
           -- Fuzzy find all the symbols in your current workspace.
           --  Similar to document symbols, except searches over your entire project.
-          map('<leader>ws', lsp_picker(telescope_builtin.lsp_dynamic_workspace_symbols), '[W]orkspace [S]ymbols')
+          map('<leader>ws', vim.lsp.buf.workspace_symbol, '[W]orkspace [S]ymbols')
 
           -- Rename the variable under your cursor.
           --  Most Language Servers support renaming across files, etc.
