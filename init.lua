@@ -880,9 +880,21 @@ require('lazy').setup({
       -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
 
       -- Prefer git instead of curl in order to improve connectivity in some environments
-      require('nvim-treesitter.install').prefer_git = true
+      local ok_install, ts_install = pcall(require, 'nvim-treesitter.install')
+      if ok_install then
+        ts_install.prefer_git = true
+      end
+
+      local ok_configs, ts_configs = pcall(require, 'nvim-treesitter.configs')
+      if not ok_configs then
+        vim.schedule(function()
+          vim.notify('nvim-treesitter is not available yet. Run :Lazy sync', vim.log.levels.WARN)
+        end)
+        return
+      end
+
       ---@diagnostic disable-next-line: missing-fields
-      require('nvim-treesitter.configs').setup(opts)
+      ts_configs.setup(opts)
 
       -- There are additional nvim-treesitter modules that you can use to interact
       -- with nvim-treesitter. You should go explore a few and see what interests you:
